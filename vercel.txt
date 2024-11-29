@@ -1,0 +1,45 @@
+1. backend folder create vercel.json
+
+2. paste code from: https://github.com/GreatStackDev/notes/blob/main/Vercel_JSON_Config_For_MERN.md
+
+ {
+    "version": 2,
+    "builds": [
+        {
+            "src": "server.js",
+            "use": "@vercel/node",
+            "config": {
+                "includeFiles": [
+                    "dist/**"
+                ]
+            }
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "server.js"
+        }
+    ]
+}
+
+3. in frontend and admin create vercel.json and paste
+
+ {
+    "rewrites": [
+      {
+        "source": "/(.*)",
+        "destination": "/"
+      }
+    ]
+  }
+
+4. created .gitignore in root folder and added
+
+    node_modules
+
+    *.env
+
+5. git - initialize repository - add message "first comit - commit
+
+6. 

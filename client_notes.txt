@@ -1,0 +1,632 @@
+COLLECTION PAGE
+_______________________________________________
+|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+
+1. created filter value array 
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+
+category filter
+__________________
+
+set state variables for category as array
+
+created a toggleCategory() fn and applied to each category value
+
+if we click on category value its target value get added to state array
+
+to toggle category option (select and deselect), it check if selected value already exists in sata variables
+
+if present it will filter state variable exeept that one
+
+
+                const [category,setCategory] = useState([]);
+
+                const toggleCategory = (e) => {
+
+                    if(category.includes(e.target.value)){
+
+                    setCategory(prev => prev.filter((item) => item !== e.target.value))
+
+                    } else{
+
+                    setCategory(prev => [...prev,e.target.value])
+                    }
+                }
+
+same for type
+
+ apply filter
+_____________________
+
+created a copy of original productArray
+
+if category or type length> 0
+
+then filter the product thats category or type value present in category or type array
+
+
+            const applyFilter = () => {
+
+                let productArrayCopy = productsArray.slice();
+
+                if(category.length > 0) {
+
+                productArrayCopy = productArrayCopy.filter((item) => category.includes(item.category))
+                }
+                if(type.length > 0) {
+
+                productArrayCopy = productArrayCopy.filter((item) => type.includes(item.type))
+                }
+
+                setFilterArray(productArrayCopy);
+            }
+
+added this fn in useeffect
+
+        useEffect(() => {
+
+        applyFilter();
+            
+        },[category,type])
+
+
+2. sort
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+
+created sort state variables
+______________________________
+
+ 
+     const [sortValue,setSortValue] = useState("relavent");
+
+created sortFunction
+________________
+
+            const sortFunction = () => {
+
+            const filterArrayCopy = filterArray.slice();
+
+            switch(sortValue) {
+
+                case 'low-high':
+
+                    setFilterArray(filterArrayCopy.sort((a,b) => a.price - b.price))
+
+                    break;
+
+                case 'high-low':
+
+                    setFilterArray(filterArrayCopy.sort((a,b) => b.price - a.price))
+
+                    break;
+
+                default:
+
+                    applyFilter();
+
+                    break;
+
+            }
+            }
+
+3. search bar visiblitity
+________________________________________________
+___________________________________________________________________________________________
+______________________________________________________________________________________________
+
+
+the search bar will be visible only on collection page
+ie, wen we click on search icon it will go to collection page and searchbar will be visible
+
+in shopContext.js
+_________________
+
+ const [showSearch,setShowSearch] = useState(false);
+
+ in navbar.jsx
+_____________________________
+
+added onclick fn to search icon
+
+<IoIosSearch onClick={() => setShowSearch(true)} className='text-lg md:text-3xl cursor-pointer'/>
+
+ created  component searchbar.jsx
+ _____________________________
+
+ imported state variables
+
+ const {showSearch,setShowSearch}  = useContext(ShopContext);
+
+ the searchbar should only open in collection page for that added link to search icon
+  _____________________________
+
+
+ <Link to='/collection'>
+
+          <IoIosSearch onClick={() => setShowSearch(true)} className='text-lg md:text-3xl cursor-pointer'/>
+
+        </Link>
+
+created location variable to check path in searchbar.js
+______________________
+
+ const location = useLocation();
+
+
+    useEffect(() => {
+
+    if(location.pathname.includes('collection')){
+
+        setSearchPath(true)
+    } 
+    
+    else{
+        setSearchPath(false)
+    }
+   },[location])
+
+
+
+only if showsearch and searchpath true, searchbar will be shown
+______________________
+
+return showSearch && searchPath ? (
+
+    <div className='border-b border-t bg-gray-50 text-center'>
+
+      
+        
+
+    </div>
+  )
+
+  : null
+}
+
+4. search  function
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+
+added onchange fn to search input field
+__________________
+
+<input value={search} onChange={(e) => setSearch(e.target.value)} className='w-full outline-none bg-inherit text-sm' type="text" placeholder='Search' />
+
+applied filter fn to applyFilter fn in colloection.jsx
+__________________
+
+ if(search && showSearch){
+
+      productArrayCopy = productArrayCopy.filter((item) => item.name.toLowerCase().includes(search.toLowerCase()))
+    }
+
+added to search value to useEffectn array
+__________________
+
+  useEffect(() => {
+
+   applyFilter();
+    
+  },[category,type,search])
+
+
+
+5. product page
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+finding product from all products array
+___________________________
+
+created 2 usestate variables
+
+  const [productInfo,setProductInfo] = useState(false);
+  const [image,setImage] = useState("");
+
+  got product id using usaparams
+  ___________________________
+
+    const {productId} = useParams();
+
+
+createed function that finf=d product with product id
+___________________________
+
+  const fetchProductInfo = async () => {
+
+    productsArray.map((item) => {
+
+      if(item._id == productId){
+
+        setProductInfo(item);
+        setImage(item.image)
+        return null;
+      }
+    })
+
+  }
+
+    useEffect(() => {
+
+    fetchProductInfo();
+
+  },[productId,productsArray])
+
+
+
+ finding relted products
+  ________________
+
+  created a seperate component
+
+  send id,type,category props
+
+  filter product from productarraycopy
+
+  useec id value to remove the same product from related products
+
+  created function to find all related products
+  ___________________________
+
+
+      const [relatedProducts,setRelatedProducts] = useState([]);
+
+      useEffect(() => {
+
+        if(productsArray.length> 0){
+          
+
+          let productsArrayCopy = productsArray.slice();
+
+          productsArrayCopy = productsArrayCopy.filter((item) => item.category === category);
+
+          productsArrayCopy = productsArrayCopy.filter((item) => item.type === type);
+
+          productsArrayCopy = productsArrayCopy.filter((item) => item._id !== id);
+
+          setRelatedProducts(productsArrayCopy.slice(0,5))
+
+
+        }
+    },[productsArray]
+
+
+6. creating cart data
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+
+createed state variables in shopcontext.js
+_______________________
+
+    const [cartItems,setCartItems] = useState({});
+
+created fn to add cart cartItems
+________________
+
+
+fn execute wen add to cart button clicked
+
+get size,id value as args
+
+create copy of cartitem state variable 
+
+        let cartData = structuredClone(cartItems);
+
+added notification if size not selected
+
+        if(!size){
+
+            toast.error("Select size");
+            return;
+        }
+
+check if cartdata[id] present, then check if size present in that
+
+    if(cartData[id]){
+
+                if(cartData[id][size]){
+
+                    cartData[id][size] += 1;
+                }
+
+                else{
+
+                    cartData[id][size] = 1;
+                }
+            }
+check if cartdata[id] not present, then create new item
+
+    else{
+
+                cartData[id]={};
+                cartData[id][size] = 1
+            }
+
+added cartdata to state variable
+
+        setCartItems(cartData);
+
+
+
+final fn
+_________________________
+
+
+const addToCart = async (id,size) => {
+
+        let cartData = structuredClone(cartItems);
+
+        if(!size){
+
+            toast.error("Select size");
+            return;
+        }
+
+        if(cartData[id]){
+
+            if(cartData[id][size]){
+
+                cartData[id][size] += 1;
+            }
+
+            else{
+
+                cartData[id][size] = 1;
+            }
+        }
+
+        else{
+
+            cartData[id]={};
+            cartData[id][size] = 1
+        }
+
+        setCartItems(cartData);
+
+
+    }
+
+    7. calculating cart count
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+
+create a fn in shopcontext.js  
+
+    getCartCount = () 
+
+initiate a variable 
+
+    let totalCount = 0;
+
+loop through cart cartItems
+________________
+
+        const getCartCount = () => {
+
+                let totalCount = 0;
+
+                for(const i in cartItems){
+
+                    for(const j in cartItems[i]){
+
+                        try {
+
+                            if(cartItems[i][j] > 0){
+
+                                totalCount += cartItems[i][j]
+                            }
+                            
+                        } catch (error) {
+                            
+                        }
+                    }
+                }
+
+                return totalCount;
+            }
+
+
+    8. creating cartdata for displaying
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+initiated state variables in cart.js
+
+  const [cartData,setCartData] = useState([]);
+
+added fn in useeffect
+_________________
+
+created copy 
+
+ const cartDataCopy = [];
+
+loop through cartItems, if cartitems[i][j] > 0 then pust an object to cartDataCopy
+________________
+
+    for(const i in cartItems){
+
+        for(const j in cartItems[i]){
+
+            if(cartItems[i][j] > 0){
+
+            cartDataCopy.push(
+
+                {
+
+                _id: i,
+                size: j,
+                quantity: cartItems[i][j]
+                }
+            )
+
+
+            }
+        }
+
+set cartDataCopy to setCartData
+
+
+    setCartData(cartDataCopy);
+
+final fn
+_______________________
+
+useEffect(() => {
+
+    const cartDataCopy = [];
+
+    for(const i in cartItems){
+
+      for(const j in cartItems[i]){
+
+        if(cartItems[i][j] > 0){
+
+          cartDataCopy.push(
+
+            {
+
+              _id: i,
+              size: j,
+              quantity: cartItems[i][j]
+            }
+          )
+
+
+        }
+      }
+    }
+
+    setCartData(cartDataCopy);
+    
+  },[cartItems])
+
+    8.  display cart data
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+loop through carddata
+
+    cartData.map((item,idx) => {
+
+
+find productInfo from main array productsArray for each item to get other details like name,price
+
+    const productInfo = productsArray.find((p) => p._id == item._id)
+
+    9.  add/ remove quanity
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+created fn in shopcontext 
+
+    addQuantity,removeQuantity
+
+passesd arg 
+
+    id,size,quantity
+
+created cartItemsCopy
+
+    let cartItemsCopy = structuredClone(cartItems);
+
+find item with id and size then increased quantity by 1
+       cartItemsCopy[id][size] = quantity+1;
+
+
+final fns
+_______________
+
+ const addQuantity = async (id,size,quantity) => {
+
+        let cartItemsCopy = structuredClone(cartItems);
+      
+        cartItemsCopy[id][size] = quantity+1;
+      
+        setCartItems(cartItemsCopy)
+        
+      
+      }
+
+      
+      
+    const removeQuantity = async (id,size,quantity) => {
+
+        let cartItemsCopy = structuredClone(cartItems);
+      
+        cartItemsCopy[id][size] = quantity-1;
+      
+        setCartItems(cartItemsCopy)
+        
+      
+      }
+
+    10.  calculate cart total amount
+__________________________________________________________________________________________
+______________________________________________________________________________________________
+
+created fn in shopContext.js
+
+    getCartTotal =  ()
+
+initiated variable
+
+    let cartTotal = 0;
+
+loop through cartitems
+
+    for(const i in cartItems)
+
+find productinfo for that id 
+
+    let productInfo = productsArray.find((p) => p._id == i);
+
+ loop through cartitems[i]   
+
+    for(const j in cartItems[i])
+
+if  if(cartItems[i][j] > 0) increment cartTotal value
+
+                if(cartItems[i][j] > 0){
+
+                        cartTotal += productInfo.price * cartItems[i][j]
+                    }
+
+final fn
+_______________
+
+
+const getCartTotal =  () => {
+
+        let cartTotal = 0;
+
+        for(const i in cartItems){
+
+            let productInfo = productsArray.find((p) => p._id == i);
+
+            for(const j in cartItems[i]){
+
+                try {
+
+                    if(cartItems[i][j] > 0){
+
+                        cartTotal += productInfo.price * cartItems[i][j]
+                    }
+                    
+                } catch (error) {
+                    
+                }
+            }
+
+            
+        }
+
+            return cartTotal
+      }

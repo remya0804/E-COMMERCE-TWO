@@ -1,0 +1,911 @@
+1. created server folder
+2. created server file
+3.  installed cdependencies 
+        npm init
+
+4. installed pacages
+
+npm i cors dotenv express jsonwebtoken mongoose multer nodemon razorpay stripe validator cloudinary bcrypt 
+
+5. folder structure
+
+config - contain all cnfigurations
+middlewares
+models
+controllers
+routes
+
+6. in package.json under scripts added 
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+    "server":"nodemon server.js"
+
+7. in package.json
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+ "type":"module",
+
+8. created file .env
+
+9. in server.js importedc packages
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+import express from 'express'
+import cors from 'cors'
+import 'dotenv/config'
+
+10. created app and port 
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+const app = express();
+
+const port = process.env.PORT || 4000;
+
+
+11. crated middlewares
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+app.use(express.json())
+app.use(cors())
+
+12. created end point 
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+        app.get('/',(req,res) => {
+
+            res.send("API Working")
+
+        })
+
+13. started server
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+    app.listen(port,() => {console.log("Server started on ",port);
+    })
+
+14. set up mongodb
+
+15. in .env created
+
+MONGODB_URI = 'mongodb+srv://remyaraju2205:ZFwNni9H3dQ9tr1h@cluster0.2f1cf.mongodb.net'
+
+14. connected mongodb
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+1.in config :
+______________________________________________
+
+created mongodb.js
+
+2. connecetd db in mongodb.js
+____________________
+
+const connectDB = async () => {
+
+    await mongoose.connect(`${process.env.MONGODB_URI}/clothiquedb`)
+}
+
+added code to log connecteb msg
+_______________
+
+        mongoose.connection.on('connected',() => {
+
+                console.log("DB Connected");
+                
+            })
+
+
+finnal code
+_______________
+
+        import mongoose from 'mongoose';
+
+        const connectDB = async () => {
+
+            mongoose.connection.on('connected',() => {
+
+                console.log("DB Connected");
+                
+            })
+
+            await mongoose.connect(`${process.env.MONGODB_URI}/clothiquedb`)
+        }
+
+        export default connectDB
+
+3. imported connectDB() in server.js
+
+
+14. connected cloudinary
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+1. in config created cloudinary.js
+
+2. browser cloudinary - get started - node js - dahboard - go to api keys = create api keys
+
+3. in .env crated variables
+________________________
+
+    CLOUDINARY_API_KEY = '512538741189434'
+
+    CLOUDINARY_SECRET_KEY = 'XGKIoas96OYwJGazHnKwa86aHy8'
+
+    CLOUDINARY_NAME = 'dyfjbw5qg'
+
+4. connected cloudinary in cloudinary.js
+_____________________
+
+        const connectCloudinary = () => {
+
+            cloudinary.config({
+
+                cloud_name: process.env.CLOUDINARY_NAME,
+                api_key: process.env.CLOUDINARY_API_KEY,
+                api_secret: process.env.CLOUDINARY_SECRET_KEY
+
+            })
+        }
+
+5. imported fn in server,js
+
+
+
+15. created product  model 
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+1. created productMOdel.js in models
+
+2. created schema 
+
+    const productSchema = new mongoose.Schema({
+
+        name:{type: String, required: true},
+        price: {type:Number, required:true},
+        image: {type: String, required: true},
+        type: {type: String, required: true},
+        category: {type: String, required: true},
+        description: {type: String, required: true},
+        sizes: {type: Array, required: true},
+        date: {type: Number, required: true},
+        images: {type: Array, required: true},
+        bestSeller: {type: Boolean}
+    })
+
+
+3. createdc model
+
+        const productModel = mongoose.model("product",productSchema)
+
+    added condition to check id model already present, so that it will not created again
+
+        const productModel = mongoose.models.product || mongoose.model("product",productSchema)
+
+
+4. final code
+_____________________
+
+    import mongoose from 'mongoose'
+
+    const productSchema = new mongoose.Schema({
+
+        name:{type: String, required: true},
+        price: {type:Number, required:true},
+        image: {type: String, required: true},
+        type: {type: String, required: true},
+        category: {type: String, required: true},
+        description: {type: String, required: true},
+        sizes: {type: Array, required: true},
+        date: {type: Number, required: true},
+        images: {type: Array, required: true},
+        bestSeller: {type: Boolean}
+    })
+
+    const productModel = mongoose.models.product || mongoose.model("product",productSchema)
+
+    export default productModel
+
+    
+16. created user  model 
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+
+import mongoose from 'mongoose'
+
+const userSchema = new mongoose.Schema({
+
+    name:{type: String, required: true},
+    email: {type:String, required:true, unique: true },
+    password: {type: String, required: true},
+    cartData: {type: Object, default:{}},
+   
+}, {minimize: false})
+
+const userModel = mongoose.models.user || mongoose.model("user",userSchema)
+
+export default userModel
+
+
+17. created usercontroller
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+1. in contriollers folder created userController,js
+
+2. created routes for login,register,adminlogin
+
+3. register route - add new user to db and return success msg and token
+______________________________________________
+______________________________________________
+
+    a. created function
+    _______________
+
+            const registerUser = async (req,res) => {
+
+
+                }
+
+    b. added try catch block
+    ____________________
+
+
+            try {
+            
+
+
+                    
+                } catch (error) {
+
+                    console.log(error);
+
+                    return res.json({success: false, message: error.message}) 
+                    
+                    
+                }
+
+
+    c. defined variables
+    ____________________
+
+     const {name,email,password} = req.body;
+
+    d. checked if email already exists
+    ____________________
+
+        const userExists = await userModel.findOne({email});
+        
+            if(userExists){
+        
+                return res.json({success:false, message: "User Already Exists"})
+            }
+
+    e. checked if email valid
+    ____________________
+
+        if(!validator.isEmail(email)){
+        
+                return res.json({success: false, message: "Please enter a valid email" }) 
+            }
+
+    f. checked if password strong
+    ____________________
+
+        if(password.length < 8){
+        
+                return res.json({success: false, message: "Please enter a strong password" }) 
+            }
+
+    g. created hashed pw
+    ____________________
+
+            const salt = await bcrypt.genSalt(10);
+
+            const hashedPassword = await bcrypt.hash(password,salt);
+
+    h. created new instance for usermodel
+    ____________________
+
+            const newUser = new userModel({
+                    name,
+                    email,
+                    password: hashedPassword
+                })   
+
+    i. saved to db
+    ____________________
+
+            const addedUser = await newUser.save();
+
+    j. created token
+    ____________________
+
+        created fn
+
+                const createToken = (id) => {
+
+                    return jwt.sign({id},process.env.JWT_SECRET)
+                }
+
+        assigned to token variables
+
+                const token = createToken(addedUser._id)
+
+                res.json({success: true, token }) 
+
+final fn
+______________________
+
+        const registerUser = async (req,res) => {
+
+            try {
+
+                const {name,email,password} = req.body;
+
+                const userExists = await userModel.findOne({email});
+            
+                if(userExists){
+            
+                    return res.json({success:false, message: "User Already Exists"})
+                }
+            
+                if(!validator.isEmail(email)){
+            
+                    return res.json({success: false, message: "Please enter a valid email" }) 
+                }
+                if(password.length < 8){
+            
+                    return res.json({success: false, message: "Please enter a strong password" }) 
+                }
+
+                // hashing
+
+                const salt = await bcrypt.genSalt(10);
+
+                const hashedPassword = await bcrypt.hash(password,salt);
+
+                const newUser = new userModel({
+                    name,
+                    email,
+                    password: hashedPassword
+                })        
+
+                const addedUser = await newUser.save();
+
+                const token = createToken(addedUser._id)
+
+                res.json({success: true, token }) 
+                
+            } catch (error) {
+
+                console.log(error);
+
+                return res.json({success: false, message: error.message}) 
+                
+                
+            }
+
+        
+        }
+
+
+this will create an object in db,
+
+    {
+    email: 'adthithisaba@gmail.com',
+    password: '$2b$10$ro4maCjhr.KnM3Qp3Du3TOIFk/KkCk0Pdf95Z7QpX4y0akLVNL/qG',
+    _id: new ObjectId('6742973adaa2147cc625759c'),
+    cartData: {}
+    }
+
+return an object
+
+    {"success":true,"token":"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY3NDI5ZDIwNmRmN2MxZTIyMDgwYjBmYSIsImlhdCI6MTczMjQxODg0OH0.xwnuf5j7Ifjbf86CCnQvmXZQBnNvW4BMfYaOKvfJCa4"}
+
+
+3. login route - check email, pwd and return success msg and token
+______________________________________________
+______________________________________________
+
+ a. created function
+
+
+        const loginUser = async (req,res) => {
+
+            
+        }
+
+b. try catch block
+
+
+        try {
+            
+
+
+                    
+                } catch (error) {
+
+                    console.log(error);
+
+                    return res.json({success: false, message: error.message}) 
+                    
+                    
+                }
+
+  c. created variables
+
+            const {email,password} = req.body;
+
+  c. found user with mail id
+
+            const existingUser = await userModel.findOne({email});
+
+  d. no user found for email return error
+
+          if(!existingUser){
+    
+            return res.json({success:false, message: "User doesn't Exists"})
+        }
+
+  e. check password
+
+          const passwordMatch = await bcrypt.compare(password,existingUser.password)
+
+  f. check password
+
+          const passwordMatch = await bcrypt.compare(password,existingUser.password)
+
+  f. if pwd mactch returntoken else retrn error
+
+            if(passwordMatch){
+
+                const token = createToken(existingUser._id)
+                return res.json({success:true, token})
+
+            } else{
+
+                return res.json({success:false, message: "Invalid credentials"})
+            }
+
+    final fn
+    ________________
+
+        const loginUser = async (req,res) => {
+
+        try {
+
+            const {email,password} = req.body;
+
+            const existingUser = await userModel.findOne({email});
+        
+            if(!existingUser){
+        
+                return res.json({success:false, message: "User doesn't Exists"})
+            }
+
+            const passwordMatch = await bcrypt.compare(password,existingUser.password)
+
+            if(passwordMatch){
+
+                const token = createToken(existingUser._id)
+                return res.json({success:true, token})
+
+            } else{
+
+                return res.json({success:false, message: "Invalid credentials"})
+            }
+            
+        } catch (error) {
+
+            console.log(error);
+
+            return res.json({success: false, message: error.message}) 
+            
+            
+        }
+
+        
+    }
+            
+
+ 4. created admin route
+________________________________________________________________________
+_________________________________________________________________________
+
+
+created cariables in .env 
+
+    ADMIN_EMAIL = "admin@clothique.com"
+
+    ADMIN_PASSWORD = "adminclothique"
+
+ checked 
+ 
+    if(email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD )
+
+
+const adminLogin = async (req,res) => {
+
+    try {
+
+        const {email,password} = req.body;
+
+        if(email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD ){
+
+            const token = jwt.sign(email+password,process.env.JWT_SECRET)
+
+            return res.json({success: true,token}) 
+
+        } else{
+
+            return res.json({success: false,message: "Invalid credentials"}) 
+        }
+        
+    } catch (error) {
+
+        console.log(error);
+
+        return res.json({success: false, message: error.message}) 
+        
+    }
+
+
+}
+
+18. created userRoute
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+1. in routees crested userRoute.js
+
+2. imported fn
+
+    import { loginUser,registerUser,adminLogin } from '../controllers/userController.js'
+
+3. created router
+
+    const userRouter = express.Router();
+
+4. created routes
+
+    userRouter.post('/register',registerUser)
+    userRouter.post('/login',loginUser)
+    userRouter.post('/admin',adminLogin)
+
+5. final code
+___________________________
+
+        import express from 'express'
+
+        import { loginUser,registerUser,adminLogin } from '../controllers/userController.js'
+
+        const userRouter = express.Router();
+
+        userRouter.post('/register',registerUser)
+        userRouter.post('/login',loginUser)
+        userRouter.post('/admin',adminLogin)
+
+        export default userRouter
+
+6. imported in server.js
+
+    app.use('/api/user',userRouter)
+
+
+
+
+
+19. created middleware multer
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+created multer.js in middleware filder
+
+        import multer  from "multer";
+
+        const storage = multer.diskStorage({
+
+            filename: function(req,filename,callback){
+
+                callback(null,filename.originalname)
+            }
+        })
+
+        const upload = multer(storage);
+
+        export default upload
+
+added middleware in '/add-product' routes(product route (20))
+
+    productRouter.post('/add-product',upload.fields([{name:'image1',maxCount:1},{name:'image2',maxCount:1},{name:'image3',maxCount:1},{name:'image4',maxCount:1}]),addProduct)
+
+
+
+20. created productController
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+1. created fns
+
+    allProducts,singleProduct,addProduct,removeProduct
+
+2. created productRoute.js in routes
+
+        import express from 'express'
+        import { allProducts,singleProduct,addProduct,removeProduct } from '../controllers/productController.js'
+
+        const productRouter = express.Router();
+
+         productRouter.post('/add-product',upload,addProduct)
+        productRouter.post('/remove-product',removeProduct)
+        productRouter.post('/single-product',singleProduct)
+        productRouter.get('/all-product',allProducts)
+
+        export default productRouter
+
+3. imported in server.js
+
+        import productRouter from './routes/productRoute.js';
+
+        app.use('/api/product',productRouter)
+
+
+20. created add-products route
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+1. added trycatch
+
+2. defined variables
+
+    const { name,price,type,category,description,sizes,bestSeller} = req.body;
+
+3. defined image files(from multer)
+
+        const image1 = req.files.image1 && req.files.image1[0]
+        const image2 = req.files.image2 && req.files.image2[0]
+        const image3 = req.files.image3 && req.files.image3[0]
+        const image4 = req.files.image3 && req.files.image4[0]
+
+4. upload images to cloudinary
+
+    let imageUrl = await Promise.all(
+
+                images.map(async (item) => {
+
+                    let result = await cloudinary.uploader.upload(item.path,{resource_type:'image'})
+                    return result.secure_url
+                })
+            )
+
+5. created product data object - form data must be string so convereted them tho appr. type
+
+
+    const productData = {
+                name,
+                price: Number(price),
+                type,
+                category,
+                description,
+                sizes:JSON.parse(sizes),
+                bestSeller: bestSeller === "true" ? true : false,
+                date:Date.now(),
+                images:imageUrl
+
+            }
+
+6. created model instance
+
+        const productAdded = new productModel(productData)
+
+7. saved to db
+
+        await productAdded.save()
+
+final code
+_______________________
+
+const addProduct = async (req,res) => {
+
+    try {
+
+        const { name,price,type,category,description,sizes,bestSeller} = req.body;
+
+        const image1 = req.files.image1 && req.files.image1[0]
+        const image2 = req.files.image2 && req.files.image2[0]
+        const image3 = req.files.image3 && req.files.image3[0]
+        const image4 = req.files.image3 && req.files.image4[0]
+
+        const images=[image1,image2,image3,image4].filter((img) => img !== undefined)
+
+        let imageUrl = await Promise.all(
+
+            images.map(async (item) => {
+
+                let result = await cloudinary.uploader.upload(item.path,{resource_type:'image'})
+                return result.secure_url
+            })
+        )
+
+        const productData = {
+            name,
+            price: Number(price),
+            type,
+            category,
+            description,
+            sizes:JSON.parse(sizes),
+            bestSeller: bestSeller === "true" ? true : false,
+            date:Date.now(),
+            images:imageUrl
+
+        }
+
+        const productAdded = new productModel(productData)
+
+        await productAdded.save()
+
+
+        return res.json({success:true,message: "Product Added"})
+
+
+        
+    } catch (error) {2
+        console.log(error);
+
+        return res.json({success: false, message: error.message}) 
+        
+    }
+
+    
+}
+
+21. created all-products route
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+        const allProducts = async (req,res) => {
+
+            try {
+
+                const allProducts = await productModel.find({});
+                
+                return res.json({success:true,allProducts})
+                
+            } catch (error) {
+
+                console.log(error);
+
+                return res.json({success: false, message: error.message}) 
+                
+                
+            }
+
+
+        }
+
+22. created remove-products route
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________
+
+        const removeProduct = async (req,res) => {
+
+            try {
+
+                await productModel.findByIdAndDelete(req.body.id);
+                
+                return res.json({success:true,message: "Product removed"})
+                
+            } catch (error) {
+
+                console.log(error);
+
+                return res.json({success: false, message: error.message}) 
+                
+                
+            }
+
+    
+    
+    23. created single-products route
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________    
+
+
+
+onst singleProduct = async (req,res) => {
+
+    try {
+
+        const {productId} = req.body;
+
+        const product = await productModel.findById(productId);
+        
+        return res.json({success:true,product})
+        
+    } catch (error) {
+
+        console.log(error);
+
+        return res.json({success: false, message: error.message}) 
+        
+        
+    }
+
+
+}
+
+
+
+24. created middleware adminAuth.js in middlewares
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________  
+
+
+import jwt from 'jsonwebtoken'
+
+const adminAuth = async (req,res,next) => {
+
+    try {
+
+        const {token} = req.headers
+
+        if(!token){
+
+            return res.json({success: false, message: "Not authorized. Login Again"}) 
+
+        }
+
+        const token_decode = jwt.verify(token,process.env.JWT_SECRET)
+
+        if(token_decode !== process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD){
+
+            return res.json({success: false, message: "Not authorized. Login Again"}) 
+        }
+
+        next()
+        
+    } catch (error) {
+
+        console.log(error);
+
+        return res.json({success: false, message: error.message}) 
+        
+    }
+}
+
+export default adminAuth
+
+
+25. added to addproducts,removeproduct routes in productRoute.js
+_______________________________________________________________________________________________________
+_______________________________________________________________________________________________________  
+
+productRouter.post('/add-product',adminAuth,upload.fields([
+    {name:'image1',maxCount:1},
+    {name:'image2',maxCount:1},
+    {name:'image3',maxCount:1},
+    {name:'image4',maxCount:1}]),
+    addProduct)
+    
+productRouter.post('/remove-product',adminAuth,removeProduct)
+
+now en we try to add product, it will show not ay=uthorized
+
+we have to send token in headers
